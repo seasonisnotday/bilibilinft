@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>1</title>
+	<script type="text/javascript">
+
+		document.addEventListener('plusready', function () {
+			//console.log("所有plus api都应该在此事件发生后调用，否则会出现plus is undefined。")
+
+		});
+
+	</script>
+	<style>
+		#zuozhe {
+			color: #00aafe;
+			text-decoration: none;
+		}
+
+		#xiaoliang {
+			color: #fe0000;
+		}
+
+		#zanshang {
+			display: flex;
+			flex-direction: row;
+		}
+	</style>
+</head>
+
+<body>
+	<div>图片下载器第四版</div>
+	<p id="zuozhe">作者bilibili@你看清楚了吗</p>
+	<div style="font-weight:bold">如果下载不了，请给app写入存储权限（访问相册权限）</div>
+	<input type="text" id="gjc" placeholder="输入收藏集的名称(不是卡片名称)" style="width:220px">
+	<button id="search">搜索/刷新</button>
+	<div>
+		注：如想下载洛天依收藏集里的蝶变典藏卡这张图，那么就输入洛天依收藏集这六个字，而不是输入蝶变<br>可以少字，不要错字，大小写随意<br>使用步骤：先名称搜索，点击下面的选择框，选择框没有就点几次刷新，还是没有才需要输入actid
+	</div>
+	<select id="mySelect" style="width:260px"></select>
+	<br>
+	<div id="xiaoliang">销量：卡数：</div>
+	<input type="number" id="websiteInput" placeholder="名称搜索不到?直接输入actid" style="width:220px">
+	<button id="start">开始</button>
+	<br><br>
+	<div id="zongXie">
+		<div id="zong"></div>
+	</div>
+	<h1>赞赏作者</h1>
+	<div id="zanshang">
+		<div id="zfb">
+			<a href="https://i0.hdslb.com/bfs/new_dyn/c98796b3eb6fec22a5ab468607e01b1a470779732.jpg" download="zfb.jpg">
+				<button id="zfbButton">下载zfb收款码</button>
+			</a>
+			<br>
+			<img src="./img/zfb.jpg" id="zfbSkm" style="width:220px">
+		</div>
+		<div id="wx">
+			<a href="https://i0.hdslb.com/bfs/new_dyn/1a20a98c033fe48d6bf5a51cfa42e572470779732.png" download="wx.png">
+				<button id="wxButton">下载wx收款码</button>
+			</a>
+			<br>
+			<img src="./img/wx.png" id="wxSkm" style="width:220px">
+		</div>
+	</div>
+	<script>
+		window.onload = function () {
+
+			const windowWidth = window.innerWidth || document.documentElement.clientWidth;//检测窗口大小
+			let suoyinweb = 'https://api.bilibili.com/x/garb/v2/mall/home/search?key_word='
+			//let suoyinweb = 'http://127.0.0.1:5500/42.txt'
+			let zuozhe = document.getElementById('zuozhe');
+			let inputElement = document.getElementById('gjc')
+			let select = document.getElementById('mySelect');//搜索框 select
+			select.innerHTML = ''
+			let optionShuaxin = new Option('请输入名称后点击上方"搜索/刷新"', '-1');
+			let option0 = new Option('点击选择', '-1');
+			select.add(optionShuaxin);
+			let search = document.getElementById('search')//刷新按钮 search
+			let xiaoliang = document.getElementById('xiaoliang')//销量文字 xiaoliang
+			let input = document.getElementById('websiteInput')//输入框 input
+			input.value = ''
+			let ButtonStart = document.getElementById("start");//开始按钮 ButtonStart
+			let zfbSkm = document.getElementById('zfbSkm')
+			zfbSkm.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+			let wxSkm = document.getElementById('wxSkm')
+			wxSkm.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+
+
+			function fetchSuoyinweb(name) {
+				fetch(suoyinweb + name)
+					.then(response => response.json())
+					.then(content => {
+
+						select.innerHTML = ''
+						console.log(content);
+						select.add(option0);
+						for (let i = 0; i < content.data.list.length; i++) {
+							if (content.data.list[i].item_id == 0) {
+								let actname = content.data.list[i].name
+								let num = Number(content.data.list[i].properties.dlc_act_id)
+
+								let option1 = new Option(actname, num);
+								select.add(option1);
+
+							}
+						}
+					})
+			}
+
+			inputElement.addEventListener('input', function () {
+				select.innerHTML = ''
+				select.add(optionShuaxin);
+				xiaoliang.innerHTML = '销量：卡数：'
+				input.value = ''
+				let zongXie = document.getElementById('zongXie');
+				let tag = document.getElementById('zong');
+				tag.remove();
+				let div1 = document.createElement('div');
+				div1.style.display = "flex"
+				div1.style.flexDirection = 'column'
+				div1.id = 'zong'
+				zongXie.appendChild(div1);
+			})
+			search.addEventListener("click", function () {
+				let gj = document.getElementById("gjc").value//关键词搜索 gj
+				console.log(gj);
+				fetchSuoyinweb(gj.toLowerCase())
+			});
+			select.addEventListener('change', function () {
+				let selectedIndex = this.selectedIndex;
+				let selectedValue = this.options[selectedIndex].value;
+				//let selectedText = this.options[selectedIndex].text;
+
+				//console.log('新选中项的索引:', selectedIndex);
+				//console.log('新选中项的值:', selectedValue);
+				//console.log('新选中项的文本:', selectedText);
+				xiaoliang.innerHTML = '销量：卡数：'
+				input.value = selectedValue != '-1' ? Number(selectedValue) : ''
+				fetchWebsiteContent()
+			});
+
+			ButtonStart.addEventListener("click", function () {
+				fetchWebsiteContent()
+				//console.log("按钮开始已经被点击");
+			});
+
+			zuozhe.addEventListener("click", function () {
+				window.open("bilibili://space/353403349")
+			});
+			function fetchWebsiteContent() {
+				let websiteUrl = 'https://api.bilibili.com/x/vas/dlc_act/asset_bag?act_id=' + document.getElementById("websiteInput").value + '&lottery_id=0&ruid=0';
+				//const websiteUrl = 'http://127.0.0.1:5500/113.txt'
+				//console.log(websiteUrl);
+
+				let xiao = 0
+				let kashu = 0
+				let gailv = ''
+				fetch(websiteUrl)
+					.then(response => response.json())
+					.then(content => {
+						let zongXie = document.getElementById('zongXie');
+						let tag = document.getElementById('zong');
+						tag.remove();
+						let div1 = document.createElement('div');
+						div1.style.display = "flex"
+						div1.style.flexDirection = 'column'
+						div1.id = 'zong'
+						zongXie.appendChild(div1);
+						for (let i = 0; i < content.data.collect_list.length; i++) {
+							if (content.data.collect_list[i].card_item != null) {
+								if (content.data.collect_list[i].card_item.card_asset_info != null) {
+									kashu += 1
+
+									let Container = document.createElement('div')//总界面 Container
+									Container.id = 'Container'
+									Container.style.display = "flex"
+									Container.style.flexDirection = 'row'
+
+									let imageContainer = document.createElement('div')//图片界面 imageContainer
+									imageContainer.id = 'imageContainer'
+
+									let buttonContainer = document.createElement('div')//按钮和文字界面 buttonContainer
+									buttonContainer.id = 'buttonContainer'
+									buttonContainer.style.margin = 'auto auto'
+									buttonContainer.style.display = "flex"
+									buttonContainer.style.flexDirection = 'column'
+
+									let img = document.createElement('img');//图片界面的图片 imageContainer img
+									img.id = 'img1' + String(i)
+									img.src = String(content.data.collect_list[i].card_item.card_asset_info.card_item.card_img) + '@150w.webp'
+									img.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+									img.style.flex = 1
+
+									let cardname = document.createElement('div');//按钮和文字界面的图片名称 buttonContainer cardname
+									cardname.style.textAlign = 'center'
+									cardname.innerHTML = String(kashu) + "<br>" + String(content.data.collect_list[i].card_item.card_asset_info.card_item.card_name) + "<br>" + String(content.data.collect_list[i].card_item.card_asset_info.card_item.card_ext_text);
+
+									gailv = ''
+
+									let gailvdiv = document.createElement('div')//按钮和文字界面的概率 buttonContainer gailvdiv
+									gailvdiv.innerHTML = gailv
+									gailvdiv.style.color = '#ff000f'
+									gailvdiv.style.textAlign = 'center'
+
+									let bhdiv = document.createElement('div')//按钮和文字界面的编号 buttonContainer bhdiv
+									bhdiv.innerHTML = '当前数量：' + String(content.data.collect_list[i].card_item.card_asset_info.card_item.total_cnt)
+									bhdiv.style.color = '#ffc107'
+									bhdiv.style.textAlign = 'center'
+
+									let AButton1 = document.createElement('a');//按钮和文字界面的图片下载链接 buttonContainer AButton1
+									AButton1.id = 'a1' + String(i)
+									AButton1.href = String(content.data.collect_list[i].card_item.card_asset_info.card_item.card_img);
+									AButton1.download = "bilibili_avatar.png"
+
+									let BButton1 = document.createElement('button');//按钮和文字界面的图片下载按钮 buttonContainer BButton1
+									BButton1.innerHTML = "下载图片"
+									BButton1.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+									BButton1.style.height = '50px'
+
+									div1.appendChild(Container);//总界面 Container
+									Container.appendChild(imageContainer);//图片界面 imageContainer
+									imageContainer.appendChild(img);//图片界面的图片 imageContainer img
+									Container.appendChild(buttonContainer);//按钮和文字界面 buttonContainer
+									buttonContainer.appendChild(cardname);//按钮和文字界面的图片名称 buttonContainer cardname
+									buttonContainer.appendChild(gailvdiv);//按钮和文字界面的概率 buttonContainer gailvdiv
+									buttonContainer.appendChild(bhdiv);//按钮和文字界面的编号 buttonContainer bhdiv
+									AButton1.appendChild(BButton1)//按钮和文字界面的图片下载按钮 buttonContainer BButton1
+									buttonContainer.appendChild(AButton1);//按钮和文字界面的图片下载链接 buttonContainer AButton1
+
+									if (content.data.collect_list[i].card_item.card_asset_info.card_item.video_list != null) {
+										let AButton2 = document.createElement('a');//按钮和文字界面的视频下载链接 buttonContainer AButton2
+										AButton2.id = 'a2' + String(i)
+										AButton2.href = String(content.data.collect_list[i].card_item.card_asset_info.card_item.video_list[0]);
+										AButton2.download = "bilibili_avatar.mp4"
+										let BButton2 = document.createElement('button');//按钮和文字界面的视频下载按钮 buttonContainer BButton2
+										BButton2.innerHTML = "下载视频"
+										BButton2.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+										BButton2.style.height = '50px'
+										BButton2.style.backgroundColor = 'rgb(0,0,0,0.39)'
+										BButton2.style.color = '#fff'
+										BButton2.style.border = 'none';
+										AButton2.appendChild(BButton2)//按钮和文字界面的视频下载按钮 buttonContainer BButton2
+										buttonContainer.appendChild(AButton2);//按钮和文字界面的视频下载链接 buttonContainer AButton2
+									}
+								}
+							}
+						}
+						for (let i = 0; i < content.data.item_list.length; i++) {
+							kashu += 1
+
+							let Container = document.createElement('div')//总界面 Container
+							Container.id = 'Container'
+							Container.style.display = "flex"
+							Container.style.flexDirection = 'row'
+
+							let imageContainer = document.createElement('div')//图片界面 imageContainer
+							imageContainer.id = 'imageContainer'
+
+							let buttonContainer = document.createElement('div')//按钮和文字界面 buttonContainer
+							buttonContainer.id = 'buttonContainer'
+							buttonContainer.style.margin = 'auto auto'
+							buttonContainer.style.display = "flex"
+							buttonContainer.style.flexDirection = 'column'
+
+							let img = document.createElement('img');//图片界面的图片 imageContainer img
+							img.id = 'img1' + String(i)
+							img.src = String(content.data.item_list[i].card_item.card_img) + '@150w.webp'
+							img.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+							img.style.flex = 1
+
+							let cardname = document.createElement('div');//按钮和文字界面的图片名称 buttonContainer cardname
+							cardname.style.textAlign = 'center'
+							cardname.innerHTML = String(kashu) + "<br>" + String(content.data.item_list[i].card_item.card_name) + "<br>" + String(content.data.item_list[i].card_item.card_ext_text);
+
+							if (String(content.data.item_list[i].card_item.holding_rate) != 0) {
+								xiao += Number(content.data.item_list[i].card_item.total_cnt)
+								gailv = Number(content.data.item_list[i].card_item.holding_rate) / 100 + '%'
+							}
+							else {
+								gailv = ''
+							}
+							let gailvdiv = document.createElement('div')//按钮和文字界面的概率 buttonContainer gailvdiv
+							gailvdiv.innerHTML = gailv
+							gailvdiv.style.color = '#ff000f'
+							gailvdiv.style.textAlign = 'center'
+
+							let bhdiv = document.createElement('div')//按钮和文字界面的编号 buttonContainer bhdiv
+							bhdiv.innerHTML = '当前数量：' + String(content.data.item_list[i].card_item.total_cnt)
+							bhdiv.style.color = '#ffc107'
+							bhdiv.style.textAlign = 'center'
+
+							let AButton1 = document.createElement('a');//按钮和文字界面的图片下载链接 buttonContainer AButton1
+							AButton1.id = 'a1' + String(i)
+							AButton1.href = String(content.data.item_list[i].card_item.card_img);
+							AButton1.download = "bilibili_avatar.png"
+
+							let BButton1 = document.createElement('button');//按钮和文字界面的图片下载按钮 buttonContainer BButton1
+							BButton1.innerHTML = "下载图片"
+							BButton1.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+							BButton1.style.height = '50px'
+
+							div1.appendChild(Container);//总界面 Container
+							Container.appendChild(imageContainer);//图片界面 imageContainer
+							imageContainer.appendChild(img);//图片界面的图片 imageContainer img
+							Container.appendChild(buttonContainer);//按钮和文字界面 buttonContainer
+							buttonContainer.appendChild(cardname);//按钮和文字界面的图片名称 buttonContainer cardname
+							buttonContainer.appendChild(gailvdiv);//按钮和文字界面的概率 buttonContainer gailvdiv
+							buttonContainer.appendChild(bhdiv);//按钮和文字界面的编号 buttonContainer bhdiv
+							AButton1.appendChild(BButton1)//按钮和文字界面的图片下载按钮 buttonContainer BButton1
+							buttonContainer.appendChild(AButton1);//按钮和文字界面的图片下载链接 buttonContainer AButton1
+
+							if (content.data.item_list[i].card_item.video_list != null) {
+								let AButton2 = document.createElement('a');//按钮和文字界面的视频下载链接 buttonContainer AButton2
+								AButton2.id = 'a2' + String(i)
+								AButton2.href = String(content.data.item_list[i].card_item.video_list[0]);
+								AButton2.download = "bilibili_avatar.mp4"
+								let BButton2 = document.createElement('button');//按钮和文字界面的视频下载按钮 buttonContainer BButton2
+								BButton2.innerHTML = "下载视频"
+								BButton2.style.width = String(Number(windowWidth) / 2 - 15) + 'px'
+								BButton2.style.height = '50px'
+								BButton2.style.backgroundColor = 'rgb(0,0,0,0.39)'
+								BButton2.style.color = '#fff'
+								BButton2.style.border = 'none';
+								AButton2.appendChild(BButton2)//按钮和文字界面的视频下载按钮 buttonContainer BButton2
+								buttonContainer.appendChild(AButton2);//按钮和文字界面的视频下载链接 buttonContainer AButton2
+							}
+						}
+						xiaoliang.innerHTML = String('销量：' + xiao + ' 卡数：' + kashu)
+					})
+
+			}
+		};
+		// window.onbeforeunload = function () {
+
+		// 	return false;
+		// };
+	</script>
+</body>
+
+</html>
